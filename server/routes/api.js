@@ -56,16 +56,14 @@ router.post('/register/consumer',(req,res)=>{
   res.status(400).send();
 });
 
-
-
 });
 
 //Login Consumer
-router.post('/login/consumer/',(req,res)=>{
+router.post('/login/consumer',(req,res)=>{
   var email = req.body.email;
   var password = req.body.password;
 
-  Consumer.find({email,password}).then((consumer)=>{
+  Consumer.findOne({email,password}).then((consumer)=>{
     if (!consumer) {
       return res.status(404).send();
     }else if (consumer.email!==email) {
@@ -74,9 +72,40 @@ router.post('/login/consumer/',(req,res)=>{
       return res.status(401).send('Ivalid password');
     }
 
+        Address.findOne({consumerid:consumer.consumerid}).then((address)=>{
+
+        if (!address) {
+          return res.status(404).send();
+        }
+
+              Counter.findOne({addressid:address.addressid}).then((counter)=>{
+
+              if (!counter) {
+                return res.status(404).send();
+              }
+
+                    Counterstat.findOne({counterid:counter.counterid}).then((counterstat)=>{
+
+                    if (!counterstat) {
+                      return res.status(404).send();
+                    }
+                              res.send({consumer,address,counter,counterstat});
+
+                    }).catch((e)=>{
+                      res.status(400).send();
+                    });
 
 
-    res.send({consumer});
+
+              }).catch((e)=>{
+                res.status(400).send();
+              });
+
+
+        }).catch((e)=>{
+          res.status(400).send();
+        });
+
 
   }).catch((e)=>{
     res.status(400).send();
